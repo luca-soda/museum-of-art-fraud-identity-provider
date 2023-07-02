@@ -4,15 +4,15 @@ import { verifyMessage, ethers, JsonRpcProvider } from 'ethers';
 import ABI from './abi';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse<any>) {
-    if (req.method === 'POST') {
-        const { address, secret } = req.body;
+    if (req.method === 'GET') {
+        const { secret, address } = req.query;
         try {
             if (secret === process.env.UNREGISTER_SECRET!) {
                 const provider = new JsonRpcProvider(process.env.RPC!);
                 const signer = new ethers.Wallet(process.env.PRIVATE_KEY!, provider);
                 const contract = new ethers.Contract(process.env.CONTRACT_ADDRESS!, ABI, signer);
                 await contract.unregister(address);
-                res.status(200).send({});
+                res.status(200).send('Revoke successful');
             }
             else {
                 res.status(403).send({ error: 'Unauthorized' });
