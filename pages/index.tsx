@@ -15,7 +15,8 @@ export default function Home() {
   const { open, close } = useWeb3Modal();
   const [success, setSuccess] = useState(false);
   const account = useAccount();
-  const { data, signMessageAsync } = useSignMessage();
+  const { signMessageAsync } = useSignMessage();
+  const [qrCode, setQrCode] = useState('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=');
 
   const getIdentity = async (e: any) => {
 
@@ -31,10 +32,15 @@ export default function Home() {
         signature
       });
       setSuccess(true);
+      const { data } = await axios.post(`${process.env.NEXT_PUBLIC_ISSUER}/metaverse-identity/issuance-request`, {
+        name,
+        familyName
+      });
+      setQrCode(data.qrCode);
     } catch (err: any) {
       const axiosError = err as AxiosError;
       console.log(err);
-      alert((axiosError.response?.data as any).error ?? 'Internal Server Error');
+      alert((axiosError.response?.data as any)?.error ?? 'Internal Server Error');
     }
   }
 
@@ -48,13 +54,17 @@ export default function Home() {
       </Head>
       <Stack alignItems='center'>
         <img src='/logo.png' width='30%' height='30%' style={{ marginTop: '5vh' }} />
-        <Stack direction='row' justifyContent='center' alignItems='center' marginTop='5vh' spacing='2vw' height='40vh'>
+        <Stack direction='row' justifyContent='center' alignItems='center' marginTop='5vh' spacing='2vw' height='60vh'>
           <Card sx={{ height: '100%', width: '30vw' }}>
+            {
+              success ? <CardHeader title='NFT Rilasciato' sx={{ textAlign: 'center' }} /> : null
+            }
             <CardContent sx={{ marginLeft: '5%', marginRight: '5%', height: '100%' }}>
               <Stack spacing='2vh' justifyContent='center' height='100%'>
-                <Spacer grow={1} />
                 {
-                  success ? <Typography variant='h3' textAlign='center'>NFT Rilasciato!</Typography> : <>
+                  
+                  success ? <Stack alignItems='center'><Typography>Scannerizza per la Credenziale Verificabile!</Typography><img src={qrCode} style={{width: '40vh', height: '40vh'}}/></Stack> : <>
+                    <Spacer grow={1} />
                     <TextField onChange={(e) => { setName(e.target.value) }} label='Nome'></TextField>
                     <TextField onChange={(e) => { setFamilyName(e.target.value) }} label='Cognome'></TextField>
                     <NoSSR>
