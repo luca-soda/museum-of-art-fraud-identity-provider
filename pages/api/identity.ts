@@ -13,14 +13,11 @@ export default async function handler(req: NextApiRequest,res: NextApiResponse<a
             const { address } = req.body;
             const provider = new JsonRpcProvider(process.env.RPC!);
             const contract = new ethers.Contract(process.env.CONTRACT_ADDRESS!, ABI, provider);
-            const [name, surname, tokenId] = await contract.identity(address);
-            res
-                .status(200).send({
-                name,
-                surname
-            });
+            const [name, tokenId, hashVc] = await contract.identity(address);
+            res.status(200).send({name});
         }
         catch (error) {
+            console.log(error);
             res.status(500).send({error});
         }
     }

@@ -7,3 +7,6 @@ build:
 push:
 	az acr login --name $(REGISTRY_NAME)
 	docker push $(REGISTRY_NAME).azurecr.io/$(IMAGE_NAME)
+
+deploy:
+	make build && make push

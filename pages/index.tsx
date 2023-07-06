@@ -25,18 +25,15 @@ export default function Home() {
       const signature = await signMessageAsync({
         message
       });
-      await axios.post(`${process.env.NEXT_PUBLIC_HOST}/api/register`, {
+      const { data } = await axios.post(`${process.env.NEXT_PUBLIC_HOST}/api/register`, {
         name,
         surname: familyName,
         address: account.address,
         signature
       });
       setSuccess(true);
-      const { data } = await axios.post(`${process.env.NEXT_PUBLIC_ISSUER}/metaverse-identity/issuance-request`, {
-        name,
-        familyName
-      });
-      setQrCode(data.qrCode);
+      // setQrCode(data.qrCode);
+      localStorage.setItem('identity', data.jwt);
     } catch (err: any) {
       const axiosError = err as AxiosError;
       console.log(err);
@@ -63,7 +60,7 @@ export default function Home() {
               <Stack spacing='2vh' justifyContent='center' height='100%'>
                 {
                   
-                  success ? <Stack alignItems='center'><Typography>Scannerizza per la Credenziale Verificabile!</Typography><img src={qrCode} style={{width: '40vh', height: '40vh'}}/></Stack> : <>
+                  success ? <Stack alignItems='center'><Typography>Credenziale registrata su Blockchain e credenziale verificabile creata!</Typography><img src={qrCode} style={{width: '40vh', height: '40vh'}}/></Stack> : <>
                     <Spacer grow={1} />
                     <TextField onChange={(e) => { setName(e.target.value) }} label='Nome'></TextField>
                     <TextField onChange={(e) => { setFamilyName(e.target.value) }} label='Cognome'></TextField>

@@ -1,7 +1,8 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { verifyMessage, ethers, JsonRpcProvider } from 'ethers';
+import { verifyMessage, ethers, JsonRpcProvider, sha256} from 'ethers';
 import ABI from './abi';
+import axios from 'axios';
 
 export default async function handler(req: NextApiRequest,res: NextApiResponse<any>) {
     if (req.method === 'POST') {
@@ -16,8 +17,10 @@ export default async function handler(req: NextApiRequest,res: NextApiResponse<a
                 const provider = new JsonRpcProvider(process.env.RPC!);
                 const signer = new ethers.Wallet(process.env.PRIVATE_KEY!, provider);
                 const contract = new ethers.Contract(process.env.CONTRACT_ADDRESS!, ABI, signer);
-                await contract.register(addr,name,surname);
-                res.status(200).send({});
+                const { data } = await axios.get(`${process.env.ISSUER_VERIFIER}/?name=${name}&address=${address}&apiKey=${process.env.API_KEY}`);
+                await contract.register(addr,name,sha256(Buffer.from(data.jwt)));
+                res.status(200).send(data);
+                return;
             }
             else {
                 res.status(400).send({error: 'Incorrect Signature'});
@@ -25,6 +28,7 @@ export default async function handler(req: NextApiRequest,res: NextApiResponse<a
             }
         }
         catch (error) {
+            console.log(error);
             res.status(500).send(error);
             return;
         }
